@@ -1,3 +1,16 @@
+function emit(name, data) {
+    var event = new CustomEvent(name, {"detail": data});
+    document.dispatchEvent(event);
+}
+
+
+function onEvent(name, callback) {
+    document.addEventListener(name, function (e) {
+        callback(e.detail);
+    }, false);
+}
+
+
 var data = [
     {"id": 0, "n_spikes": 10, "group": "unsorted", "quality": 1.},
     {"id": 1, "n_spikes": 20, "group": "unsorted", "quality": 0.9},
@@ -18,4 +31,8 @@ var options = {
   item: item,
 };
 
+
 var myTable = new List('table', options, data);
+
+onEvent("add_to_selection", function (data) {console.log(data);});
+emit("add_to_selection", {"a": 1});
