@@ -181,11 +181,13 @@ Table.prototype._toggleSort = function (column) {
 Table.prototype._setEventHandlers = function () {
     var that = this;
     this.onEvent("select", function (id) {
+        if (isNaN(id)) return;
         var row = that.getRow(id);
         that._clearSelection();
         that._addToSelection(row);
     });
     this.onEvent("select-toggle", function (id) {
+        if (isNaN(id)) return;
         var row = that.getRow(id);
         if (that._selectedRows.includes(row)) {
             that._removeFromSelection(row);
@@ -195,12 +197,14 @@ Table.prototype._setEventHandlers = function () {
         }
     });
     this.onEvent("select-until", function (id) {
+        if (isNaN(id)) return;
         if (that._selectedRows.length != 1) return;
         var first = that._selectedRows[0];
         var row = that.getRow(id);
         // TODO
     });
     this.onEvent("sort-toggle", function (column) {
+        if (!column) return;
         that._toggleSort(column);
     });
 };
