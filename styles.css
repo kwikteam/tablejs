@@ -5,13 +5,16 @@ body, input {
     color: white;
 }
 
-body, p, div, th, td {
+body, p, div, th, td, input {
     font-family: Helvetica;
+    font-size: 10pt;
 }
 
-input.search {
-    margin: 10px;
+#table input {
+    margin: 10px 0px;
     padding: 5px;
+    width: 300px;
+    border: 1px solid #ddd;
 }
 
 th.sort::-moz-selection { background:transparent; }

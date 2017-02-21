@@ -3,6 +3,9 @@ var Table = function (tableId, options, values) {
     this.el = document.getElementById(tableId).
         getElementsByTagName('table')[0];
 
+    this.fel = document.getElementById(tableId).
+        getElementsByTagName('input')[0];
+
     // Set the row item.
     options.item = this._setRowItem(options);
 
@@ -16,6 +19,7 @@ var Table = function (tableId, options, values) {
 
     // Set click event and event handlers.
     this._setClick();
+    this._setKeyPress();
     this._setEventHandlers();
 }
 
@@ -104,6 +108,34 @@ Table.prototype._setClick = function () {
         else {
             that.emit("select", id);
         }
+    });
+};
+
+
+Table.prototype._setKeyPress = function () {
+    var that = this;
+    this.fel.addEventListener("keyup", function (e) {
+        var text = that.fel.value;
+        var textOrig = text;
+        if (!text) {
+            that.filter();
+            return
+        }
+        // Replace column name in JS expression.
+        for (name of that.columns) {
+            text = text.replace(new RegExp("\\b" + name + "\\b", "g"),
+                                "item.values()." + name);
+        }
+        // Filter according to the written expression.
+        that.filter(function (item) {
+            try {
+                out = eval(text);
+                return out;
+            }
+            catch (err) {
+                return true;
+            }
+        });
     });
 };
 
