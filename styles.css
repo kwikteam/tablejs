@@ -40,21 +40,26 @@ th.sort-header { cursor:pointer; }
     padding: 5px 5px 5px 5px;
 }
 
+#table th.sort-header:hover:after {
+    visibility: visible;
+    color: #999;
+}
+
 #table th.sort-header:after {
     content: "\25B2";
     margin: 0 3px;
     visibility: hidden;
 }
 
-#table th.sort-header:hover:after {
-    visibility: visible;
-}
-
 #table th.sort-up:after {
-    content: "\25BC";
+    content: "\25B2";
 }
 #table th.sort-down:after {
-    content: "\25B2";
+    content: "\25BC";
+}
+
+#table th.sort-up:hover:after, #table th.sort-down:hover:after {
+    color: #fff;
 }
 
 #table th.sort-up:after,

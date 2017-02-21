@@ -10,6 +10,9 @@ var Table = function (tableId, options, values) {
     this._setHeader(options);
 
     this._selectedRows = [];
+    this._sortBy = {};
+
+    // Set click event and event handlers.
     this._setClick();
     this._setEventHandlers();
 
@@ -70,6 +73,18 @@ Table.prototype.getRow = function (id) {
 };
 
 
+Table.prototype._getHeader = function (column) {
+    /* Return the TH element of a given column. */
+    var thead = this.el.getElementsByTagName('thead')[0];
+    for (var th of thead.children[0].children) {
+        if ((th.nodeName == 'TH') && (th.textContent == column)) {
+            return th;
+        }
+    }
+    return null;
+};
+
+
 Table.prototype._setClick = function () {
     var that = this;
     this.el.addEventListener("click", function (e) {
@@ -77,14 +92,20 @@ Table.prototype._setClick = function () {
         var evt = e ? e:window.event;
         var id = getId(element);
 
+        // Header.
+        if (isNaN(id)) {
+            // Unsorted -> sort asc -> sort desc.
+            that.emit("sort-toggle", element.textContent);
+        }
+
         // Control pressed.
         if (evt.ctrlKey || evt.metaKey) {
             that.emit("select-toggle", id);
         }
         // Shift pressed.
-        // else if (evt.shiftKey) {
-        //     that.emit("select-until", id);
-        // }
+        else if (evt.shiftKey) {
+            that.emit("select-until", id);
+        }
         // No control or shift.
         else {
             that.emit("select", id);
@@ -118,6 +139,47 @@ Table.prototype._removeFromSelection = function (row) {
 }
 
 
+Table.prototype._clearSort = function () {
+    // Remove sort class from all TH headers.
+    var thead = this.el.getElementsByTagName('thead')[0];
+    for (var th of thead.children[0].children) {
+        if (th.nodeName == 'TH') {
+            th.classList.remove("sort-up");
+            th.classList.remove("sort-down");
+        }
+    }
+    this._sortBy = {};
+};
+
+
+Table.prototype._setSort = function (column, order) {
+    var th = this._getHeader(column);
+    // Remove sort classes.
+    th.classList.remove("sort-up");
+    th.classList.remove("sort-down");
+    // Add sort classes.
+    th.classList.add("sort-" + order);
+    this._sortBy.name = column;
+    this._sortBy.order = order;
+};
+
+
+Table.prototype._toggleSort = function (column) {
+    var order = this._sortBy.order;
+    this._clearSort();
+    if (order == "down") {
+        // Nothing to do: sort is cleared.
+    }
+    else if (order == "up") {
+        this._setSort(column, "down");
+    }
+    else  {
+        this._setSort(column, "up");
+    }
+    console.log("Sort by", this._sortBy.name, this._sortBy.order);
+};
+
+
 Table.prototype._setEventHandlers = function () {
     var that = this;
     this.onEvent("select", function (id) {
@@ -139,6 +201,9 @@ Table.prototype._setEventHandlers = function () {
         var first = that._selectedRows[0];
         var row = that.getRow(id);
         // TODO
+    });
+    this.onEvent("sort-toggle", function (column) {
+        that._toggleSort(column);
     });
 };
 
