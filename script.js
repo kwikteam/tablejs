@@ -114,7 +114,7 @@ Table.prototype._setClick = function () {
 
 Table.prototype._setKeyPress = function () {
     var that = this;
-    this.fel.addEventListener("keyup", function (e) {
+    this.fel.addEventListener("input", function (e) {
         var text = that.fel.value;
         var textOrig = text;
         if (!text) {
