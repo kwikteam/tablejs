@@ -1,5 +1,5 @@
 body, input {
-    margin: 0;
+    margin: 10px;
     padding: 0;
     background-color: black;
     color: white;
@@ -16,10 +16,18 @@ th.sort-header { cursor:pointer; }
 
 #table {
     border-collapse: collapse;
+    border: 0;
+    padding: 0;
+}
+
+#table tbody, #table thead {
+    margin: 0;
+    padding: 0;
+    border: 0;
 }
 
 #table td {
-    padding: 5px 10px;
+    padding: 5px 15px;
     margin: 0;
     border: 0;
 }
@@ -49,7 +57,7 @@ th.sort-header { cursor:pointer; }
 }
 
 #table tr {
-    cursor:pointer;
+    cursor: pointer;
     margin: 0;
     padding: 0;
     border: 0;
