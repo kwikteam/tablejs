@@ -1,25 +1,50 @@
 
 var Table = function (tableId, options, values) {
+    this.el = document.getElementById(tableId).
+        getElementsByTagName('table')[0];
 
+    // Set the row item.
+    options.item = this._setRowItem(options);
+
+    // Set the header cells.
+    this._setHeader(options);
+
+    this._selectedRows = [];
+    this._setClick();
+    this._setEventHandlers();
+
+    // Constructor.
+    List.apply(this, arguments)
+}
+
+Table.prototype = List.prototype;
+Table.prototype.constructor = Table;
+
+
+Table.prototype._setRowItem = function (options) {
     // Define the row item.
     var item = '<tr id="table-item">';
     for (var column of options.columns) {
         item += '<td class="' + column + '"></td>';
     }
     item += '</tr>';
-    options.item = item;
+    return item;
+};
 
-    this.el = document.getElementById(tableId).
-        getElementsByTagName('table')[0];
 
-    List.apply(this, arguments)
-    this._selectedRows = [];
-    this._setClick();
-    this._setEventHandlers();
-}
+Table.prototype._setHeader = function (options) {
+    var thead = this.el.getElementsByTagName("thead")[0];
 
-Table.prototype = List.prototype;
-Table.prototype.constructor = Table;
+    // Header.
+    var tr = document.createElement("tr");
+    for (var column of options.columns) {
+        var th = document.createElement("th");
+        th.appendChild(document.createTextNode(column));
+        th.classList.add("sort-header");
+        tr.appendChild(th);
+    }
+    thead.appendChild(tr);
+};
 
 
 function getId (element) {

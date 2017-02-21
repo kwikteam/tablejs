@@ -5,6 +5,10 @@ body, input {
     color: white;
 }
 
+body, p, div, th, td {
+    font-family: Helvetica;
+}
+
 input.search {
     margin: 10px;
     padding: 5px;
@@ -27,15 +31,18 @@ th.sort-header { cursor:pointer; }
 }
 
 #table td {
-    padding: 5px 15px;
+    padding: 8px 8px 6px 8px;
     margin: 0;
     border: 0;
 }
 
+#table th {
+    padding: 5px 5px 5px 5px;
+}
+
 #table th.sort-header:after {
     content: "\25B2";
-    margin-left: 5px;
-    margin-right: 15px;
+    margin: 0 3px;
     visibility: hidden;
 }
 
