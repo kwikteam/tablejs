@@ -9,47 +9,91 @@ var Table = function (tableId, options, values) {
     item += '</tr>';
     options.item = item;
 
+    this.el = document.getElementById(tableId).
+        getElementsByTagName('table')[0];
+
     List.apply(this, arguments)
-
-    // Click event.
-    domTable = document.getElementById(tableId);
-    domTable.addEventListener("click", function (e) {
-        var element = e.srcElement || e.target;
-        if (element == null) return;
-        if (element.nodeName == 'TABLE') return;
-        while (element.nodeName != 'TR') element = element.parentNode;
-        var id = parseInt(element.children[0].textContent);
-
-        var evt = e ? e:window.event;
-
-        // Control pressed.
-        if (evt.ctrlKey || evt.metaKey) {
-            console.log("control");
-        }
-        // Shift pressed.
-        else if (evt.shiftKey) {
-            console.log("shift");
-        }
-
-        console.log(id);
-    });
+    this._selectedRows = [];
+    this._setClick();
+    this._setEventHandlers();
 }
 
 Table.prototype = List.prototype;
 Table.prototype.constructor = Table;
 
 
+function getId (element) {
+    /* Return the id of an element of the table. */
+    if (element == null) return;
+    if (element.nodeName == 'TABLE') return;
+    while (element.nodeName != 'TR') {
+        element = element.parentNode;
+    }
+    return parseInt(element.children[0].textContent);
+};
+
+
+Table.prototype.getRow = function (id) {
+    /* Return the TR element with a given id. */
+    var tbody = this.el.getElementsByTagName('tbody')[0];
+    for (var row of tbody.children) {
+        if ((row.nodeName == 'TR') && (row.children[0].textContent == id)) {
+            return row;
+        }
+    }
+    return null;
+};
+
+
+Table.prototype._setClick = function () {
+    var that = this;
+    this.el.addEventListener("click", function (e) {
+        var element = e.srcElement || e.target;
+        var evt = e ? e:window.event;
+        var id = getId(element);
+
+        // Control pressed.
+        if (evt.ctrlKey || evt.metaKey) {
+            that.emit("select-toggle", id);
+        }
+        // Shift pressed.
+        else if (evt.shiftKey) {
+            that.emit("select-until", id);
+        }
+        // No control or shift.
+        else {
+            that.emit("select", id);
+        }
+    });
+};
+
+
+Table.prototype._setEventHandlers = function () {
+    var that = this;
+    this.onEvent("select", function (id) {
+        var row = that.getRow(id);
+        // Clear previously selected rows.
+        for (var prevSelected of that._selectedRows) {
+            prevSelected.classList.remove("selected");
+        }
+        // Set the selected class to the row.
+        row.classList.add("selected");
+        that._selectedRows.push(row);
+    });
+};
+
+
 Table.prototype.emit = function (name, data) {
     var event = new CustomEvent(name, {"detail": data});
     document.dispatchEvent(event);
-}
+};
 
 
 Table.prototype.onEvent = function (name, callback) {
     document.addEventListener(name, function (e) {
         callback(e.detail);
     }, false);
-}
+};
 
 
 // ----------------------------------------------------------------------------
@@ -71,4 +115,4 @@ var options = {
 
 
 var myTable = new Table('table', options, data);
-// onEvent("add_to_selection", function(data) {console.log(data);});
+// console.log(myTable);
