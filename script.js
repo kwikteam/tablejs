@@ -57,9 +57,9 @@ Table.prototype._setClick = function () {
             that.emit("select-toggle", id);
         }
         // Shift pressed.
-        else if (evt.shiftKey) {
-            that.emit("select-until", id);
-        }
+        // else if (evt.shiftKey) {
+        //     that.emit("select-until", id);
+        // }
         // No control or shift.
         else {
             that.emit("select", id);
@@ -68,17 +68,52 @@ Table.prototype._setClick = function () {
 };
 
 
+Table.prototype._clearSelection = function () {
+    for (var prevSelected of this._selectedRows) {
+        prevSelected.classList.remove("selected");
+    }
+    this._selectedRows = [];
+}
+
+
+Table.prototype._addToSelection = function (row) {
+    if (!row) return;
+    row.classList.add("selected");
+    this._selectedRows.push(row);
+}
+
+
+Table.prototype._removeFromSelection = function (row) {
+    if (!row) return;
+    row.classList.remove("selected");
+    var index = this._selectedRows.indexOf(row);
+    if (index > -1) {
+        this._selectedRows.splice(index, 1);
+    }
+}
+
+
 Table.prototype._setEventHandlers = function () {
     var that = this;
     this.onEvent("select", function (id) {
         var row = that.getRow(id);
-        // Clear previously selected rows.
-        for (var prevSelected of that._selectedRows) {
-            prevSelected.classList.remove("selected");
+        that._clearSelection();
+        that._addToSelection(row);
+    });
+    this.onEvent("select-toggle", function (id) {
+        var row = that.getRow(id);
+        if (that._selectedRows.includes(row)) {
+            that._removeFromSelection(row);
         }
-        // Set the selected class to the row.
-        row.classList.add("selected");
-        that._selectedRows.push(row);
+        else {
+            that._addToSelection(row);
+        }
+    });
+    this.onEvent("select-until", function (id) {
+        if (that._selectedRows.length != 1) return;
+        var first = that._selectedRows[0];
+        var row = that.getRow(id);
+        // TODO
     });
 };
 

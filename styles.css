@@ -10,11 +10,6 @@ input.search {
     padding: 5px;
 }
 
-#table td {
-    padding: 3px;
-    margin: 0;
-}
-
 th.sort-header::-moz-selection { background:transparent; }
 th.sort-header::selection  { background:transparent; }
 th.sort-header { cursor:pointer; }
@@ -26,6 +21,7 @@ th.sort-header { cursor:pointer; }
 #table td {
     padding: 5px 10px;
     margin: 0;
+    border: 0;
 }
 
 #table th.sort-header:after {
@@ -52,7 +48,12 @@ th.sort-header { cursor:pointer; }
     visibility: visible;
 }
 
-#table tr { cursor:pointer; }
+#table tr {
+    cursor:pointer;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
 
 #table tr:hover {
     background-color: #222;
