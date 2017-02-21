@@ -10,14 +10,13 @@ var Table = function (tableId, options, values) {
     this._setHeader(options);
 
     this._selectedRows = [];
-    this._sortBy = {};
+
+    // Constructor.
+    List.apply(this, arguments)
 
     // Set click event and event handlers.
     this._setClick();
     this._setEventHandlers();
-
-    // Constructor.
-    List.apply(this, arguments)
 }
 
 Table.prototype = List.prototype;
@@ -43,7 +42,8 @@ Table.prototype._setHeader = function (options) {
     for (var column of options.columns) {
         var th = document.createElement("th");
         th.appendChild(document.createTextNode(column));
-        th.classList.add("sort-header");
+        th.classList.add("sort");
+        th.dataset.sort = column;
         tr.appendChild(th);
     }
     thead.appendChild(tr);
@@ -92,11 +92,6 @@ Table.prototype._setClick = function () {
         var evt = e ? e:window.event;
         var id = getId(element);
 
-        // Header.
-        if (isNaN(id)) {
-            that.emit("sort-toggle", element.textContent);
-        }
-
         // Control pressed.
         if (evt.ctrlKey || evt.metaKey) {
             that.emit("select-toggle", id);
@@ -138,46 +133,6 @@ Table.prototype._removeFromSelection = function (row) {
 }
 
 
-Table.prototype._clearSort = function () {
-    // Remove sort class from all TH headers.
-    var thead = this.el.getElementsByTagName('thead')[0];
-    for (var th of thead.children[0].children) {
-        if (th.nodeName == 'TH') {
-            th.classList.remove("sort-asc");
-            th.classList.remove("sort-desc");
-        }
-    }
-    this._sortBy = {};
-};
-
-
-Table.prototype._setSort = function (column, order) {
-    if (!column) return;
-    var th = this._getHeader(column);
-    // Remove sort classes.
-    th.classList.remove("sort-asc");
-    th.classList.remove("sort-desc");
-    // Add sort classes.
-    th.classList.add("sort-" + order);
-    this._sortBy.name = column;
-    this._sortBy.order = order;
-};
-
-
-Table.prototype._toggleSort = function (column) {
-    var prevColumn = this._sortBy.name;
-    var prevOrder = this._sortBy.order;
-    var order = "asc";
-    this._clearSort();
-    if (column == prevColumn) {
-        order = prevOrder == "asc" ? "desc" : "asc";
-    }
-    this._setSort(column, order);
-    this.sort(column, {"order": order});
-    console.log("Sort by", this._sortBy.name, this._sortBy.order);
-};
-
-
 Table.prototype._setEventHandlers = function () {
     var that = this;
     this.onEvent("select", function (id) {
@@ -203,9 +158,8 @@ Table.prototype._setEventHandlers = function () {
         var row = that.getRow(id);
         // TODO
     });
-    this.onEvent("sort-toggle", function (column) {
-        if (!column) return;
-        that._toggleSort(column);
+    this.on("sortComplete", function () {
+        // React to sort.
     });
 };
 
