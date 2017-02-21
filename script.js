@@ -94,7 +94,6 @@ Table.prototype._setClick = function () {
 
         // Header.
         if (isNaN(id)) {
-            // Unsorted -> sort asc -> sort desc.
             that.emit("sort-toggle", element.textContent);
         }
 
@@ -144,8 +143,8 @@ Table.prototype._clearSort = function () {
     var thead = this.el.getElementsByTagName('thead')[0];
     for (var th of thead.children[0].children) {
         if (th.nodeName == 'TH') {
-            th.classList.remove("sort-up");
-            th.classList.remove("sort-down");
+            th.classList.remove("sort-asc");
+            th.classList.remove("sort-desc");
         }
     }
     this._sortBy = {};
@@ -153,10 +152,11 @@ Table.prototype._clearSort = function () {
 
 
 Table.prototype._setSort = function (column, order) {
+    if (!column) return;
     var th = this._getHeader(column);
     // Remove sort classes.
-    th.classList.remove("sort-up");
-    th.classList.remove("sort-down");
+    th.classList.remove("sort-asc");
+    th.classList.remove("sort-desc");
     // Add sort classes.
     th.classList.add("sort-" + order);
     this._sortBy.name = column;
@@ -165,17 +165,15 @@ Table.prototype._setSort = function (column, order) {
 
 
 Table.prototype._toggleSort = function (column) {
-    var order = this._sortBy.order;
+    var prevColumn = this._sortBy.name;
+    var prevOrder = this._sortBy.order;
+    var order = "asc";
     this._clearSort();
-    if (order == "down") {
-        // Nothing to do: sort is cleared.
+    if (column == prevColumn) {
+        order = prevOrder == "asc" ? "desc" : "asc";
     }
-    else if (order == "up") {
-        this._setSort(column, "down");
-    }
-    else  {
-        this._setSort(column, "up");
-    }
+    this._setSort(column, order);
+    this.sort(column, {"order": order});
     console.log("Sort by", this._sortBy.name, this._sortBy.order);
 };
 

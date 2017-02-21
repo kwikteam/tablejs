@@ -51,20 +51,20 @@ th.sort-header { cursor:pointer; }
     visibility: hidden;
 }
 
-#table th.sort-up:after {
+#table th.sort-asc:after {
     content: "\25B2";
 }
-#table th.sort-down:after {
+#table th.sort-desc:after {
     content: "\25BC";
 }
 
-#table th.sort-up:hover:after, #table th.sort-down:hover:after {
+#table th.sort-asc:hover:after, #table th.sort-desc:hover:after {
     color: #fff;
 }
 
-#table th.sort-up:after,
-#table th.sort-down:after,
-#table th.sort-down:hover:after {
+#table th.sort-asc:after,
+#table th.sort-desc:after,
+#table th.sort-desc:hover:after {
     visibility: visible;
 }
 
