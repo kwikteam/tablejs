@@ -286,6 +286,48 @@ Table.prototype.remove_ = function(ids) {
 }
 
 
+Table.prototype.selected = function() {
+    return this._selectedRows.map(function (row) { return getId(row); });
+};
+
+
+Table.prototype._isMasked = function(row) {
+    if (!row) return false;
+    return this.get("id", getId(row))[0].values()._meta == "mask";
+};
+
+
+Table.prototype.getSiblingId = function(id, dir="next") {
+    // By default, first selected item.
+    if (typeof(id) === "undefined") {
+        id = this.selected()[0];
+    }
+    // Otherwise, first item in the list.
+    if (id == null) return null;
+    var row = this._getRow(id);
+    do {
+        if (dir == "next") row = row.nextSibling;
+        else if (dir == "previous") row = row.previousSibling;
+    }
+    while (this._isMasked(row));
+    if (this._isMasked(row)) return null;
+    // Ensure the result is not masked.
+    return getId(row);
+};
+
+
+Table.prototype.moveToSibling = function(id, dir="next") {
+    // Select the first item if there is no selection.
+    if (this._selectedRows.length == 0) {
+        this.emit("select", this.items[0].values().id);
+        return;
+    }
+    var newId = this.getSiblingId(id, dir);
+    if (newId == null) return;
+    this.emit("select", newId);
+};
+
+
 // Test
 // ----------------------------------------------------------------------------
 
@@ -300,7 +342,7 @@ var data = [
 
 
 var options = {
-  valueNames: ["id", "n_spikes", "quality", "group"],
+  valueNames: ["id", "n_spikes", "quality", "group", "_meta"],
   columns: ["id", "n_spikes", "quality", "group"],
 };
 
