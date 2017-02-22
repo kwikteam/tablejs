@@ -105,8 +105,12 @@ th.sort { cursor:pointer; }
     background-color: #888;
 }
 
-#table tr[data-skip='true'] {
+#table tr[data-meta='mask'] {
     color: #888;
+}
+
+#table tr[data-meta='highlight'] {
+    color: #86D16D;
 }
 
 #table tr, #table td {

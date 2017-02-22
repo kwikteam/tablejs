@@ -38,6 +38,7 @@ var Table = function (tableId, options, values) {
     this._setClick();
     this._setKeyPress();
     this._setEventHandlers();
+    this._updateDataAttributes();
 }
 
 Table.prototype = List.prototype;
@@ -131,7 +132,7 @@ Table.prototype._setKeyPress = function () {
             return
         }
         // Replace column name in JS expression.
-        for (name of that.columns) {
+        for (name of that.valueNames) {
             text = text.replace(new RegExp("\\b" + name + "\\b", "g"),
                                 "item.values()." + name);
         }
@@ -147,6 +148,27 @@ Table.prototype._setKeyPress = function () {
         });
     });
 };
+
+
+Table.prototype._currentSort = function() {
+    // Return the current sort if there is one.
+    for (let column of this.columns) {
+        var th = this._getHeader(column);
+        if (th.classList.contains("asc")) return [column, "asc"];
+        else if (th.classList.contains("desc")) return [column, "desc"];
+    }
+};
+
+
+Table.prototype._updateDataAttributes = function() {
+    for (let item of this.items) {
+        let values = item.values();
+        if (values._meta) {
+            let row = this._getRow(values.id);
+            row.dataset.meta = values._meta;
+        }
+    }
+}
 
 
 // Selection
@@ -227,12 +249,41 @@ Table.prototype.onEvent = function (name, callback) {
 // Public methods
 // ----------------------------------------------------------------------------
 
-Table.prototype.select = function(ids) {
+Table.prototype.select_ = function(ids) {
     this._clearSelection();
     for (let id of ids) {
         this._addToSelection(this._getRow(id));
     }
 };
+
+
+Table.prototype.add_ = function(objects) {
+    this.add(objects);
+    this._updateDataAttributes();
+    var sort = this._currentSort();
+    if (!sort) return;
+    this.sort(sort[0], {"order": sort[1]});
+}
+
+
+Table.prototype.change_ = function(objects) {
+    for (let object of objects) {
+        var item = this.get("id", object.id)[0];
+        item.values(object);
+    }
+    this._updateDataAttributes();
+    var sort = this._currentSort();
+    if (!sort) return;
+    this.sort(sort[0], {"order": sort[1]});
+}
+
+
+Table.prototype.remove_ = function(ids) {
+    for (let id of ids) {
+        this.remove("id", id);
+    }
+    this._updateDataAttributes();
+}
 
 
 // Test
@@ -241,14 +292,16 @@ Table.prototype.select = function(ids) {
 var data = [
     {"id": 0, "n_spikes": 10, "group": "unsorted", "quality": 1.},
     {"id": 1, "n_spikes": 20, "group": "unsorted", "quality": 0.9},
-    {"id": 2, "n_spikes": 30, "group": "good", "quality": 0.8},
-    {"id": 3, "n_spikes": 40, "group": "noise", "quality": 0.7},
+    {"id": 2, "n_spikes": 30, "group": "good", "quality": 0.8,
+     "_meta": "highlight"},
+    {"id": 3, "n_spikes": 40, "group": "noise", "quality": 0.7,
+     "_meta": "mask"},
 ];
 
 
 var options = {
-  valueNames: ['id', 'n_spikes', 'quality'],
-  columns: ["id", "n_spikes", "quality"],
+  valueNames: ["id", "n_spikes", "quality", "group"],
+  columns: ["id", "n_spikes", "quality", "group"],
 };
 
 
