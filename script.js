@@ -1,4 +1,21 @@
 
+// Utility functions
+// ----------------------------------------------------------------------------
+
+function getId (element) {
+    /* Return the id of an element of the table. */
+    if (element == null) return;
+    if (element.nodeName == 'TABLE') return;
+    while (element.nodeName != 'TR') {
+        element = element.parentNode;
+    }
+    return parseInt(element.children[0].textContent);
+};
+
+
+// Table
+// ----------------------------------------------------------------------------
+
 var Table = function (tableId, options, values) {
     this.el = document.getElementById(tableId).
         getElementsByTagName('table')[0];
@@ -27,6 +44,9 @@ Table.prototype = List.prototype;
 Table.prototype.constructor = Table;
 
 
+// Constructor
+// ----------------------------------------------------------------------------
+
 Table.prototype._setRowItem = function (options) {
     // Define the row item.
     var item = '<tr id="table-item">';
@@ -54,18 +74,7 @@ Table.prototype._setHeader = function (options) {
 };
 
 
-function getId (element) {
-    /* Return the id of an element of the table. */
-    if (element == null) return;
-    if (element.nodeName == 'TABLE') return;
-    while (element.nodeName != 'TR') {
-        element = element.parentNode;
-    }
-    return parseInt(element.children[0].textContent);
-};
-
-
-Table.prototype.getRow = function (id) {
+Table.prototype._getRow = function (id) {
     /* Return the TR element with a given id. */
     var tbody = this.el.getElementsByTagName('tbody')[0];
     for (var row of tbody.children) {
@@ -140,6 +149,9 @@ Table.prototype._setKeyPress = function () {
 };
 
 
+// Selection
+// ----------------------------------------------------------------------------
+
 Table.prototype._clearSelection = function () {
     for (var prevSelected of this._selectedRows) {
         prevSelected.classList.remove("selected");
@@ -165,17 +177,20 @@ Table.prototype._removeFromSelection = function (row) {
 }
 
 
+// Event system
+// ----------------------------------------------------------------------------
+
 Table.prototype._setEventHandlers = function () {
     var that = this;
     this.onEvent("select", function (id) {
         if (isNaN(id)) return;
-        var row = that.getRow(id);
+        var row = that._getRow(id);
         that._clearSelection();
         that._addToSelection(row);
     });
     this.onEvent("select-toggle", function (id) {
         if (isNaN(id)) return;
-        var row = that.getRow(id);
+        var row = that._getRow(id);
         if (that._selectedRows.includes(row)) {
             that._removeFromSelection(row);
         }
@@ -187,7 +202,7 @@ Table.prototype._setEventHandlers = function () {
         if (isNaN(id)) return;
         if (that._selectedRows.length != 1) return;
         var first = that._selectedRows[0];
-        var row = that.getRow(id);
+        var row = that._getRow(id);
         // TODO
     });
     this.on("sortComplete", function () {
@@ -209,8 +224,18 @@ Table.prototype.onEvent = function (name, callback) {
 };
 
 
+// Public methods
 // ----------------------------------------------------------------------------
-// TEST
+
+Table.prototype.select = function(ids) {
+    this._clearSelection();
+    for (let id of ids) {
+        this._addToSelection(this._getRow(id));
+    }
+};
+
+
+// Test
 // ----------------------------------------------------------------------------
 
 var data = [
