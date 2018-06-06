@@ -87,6 +87,19 @@ Table.prototype._getRow = function (id) {
 };
 
 
+Table.prototype._getIds = function () {
+    /* Return all ids in order. */
+    var tbody = this.el.getElementsByTagName('tbody')[0];
+    var ids = [];
+    for (var row of tbody.children) {
+        if (row.nodeName == 'TR') {
+            ids.push(parseInt(row.children[0].textContent));
+        }
+    }
+    return ids;
+};
+
+
 Table.prototype._getHeader = function (column) {
     /* Return the TH element of a given column. */
     var thead = this.el.getElementsByTagName('thead')[0];
@@ -328,24 +341,6 @@ Table.prototype.moveToSibling = function(id, dir="next") {
 };
 
 
-// Test
-// ----------------------------------------------------------------------------
-
-var data = [
-    {"id": 0, "n_spikes": 10, "group": "unsorted", "quality": 1.},
-    {"id": 1, "n_spikes": 20, "group": "unsorted", "quality": 0.9},
-    {"id": 2, "n_spikes": 30, "group": "good", "quality": 0.8,
-     "_meta": "highlight"},
-    {"id": 3, "n_spikes": 40, "group": "noise", "quality": 0.7,
-     "_meta": "mask"},
-];
-
-
-var options = {
-  valueNames: ["id", "n_spikes", "quality", "group", "_meta"],
-  columns: ["id", "n_spikes", "quality", "group"],
-};
-
-
-var myTable = new Table('table', options, data);
-// console.log(myTable);
+Table.prototype.sort_ = function(name, sort_dir="asc") {
+    this.sort(name, {"order": sort_dir});
+}
