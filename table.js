@@ -345,12 +345,12 @@ Table.prototype.getSiblingId = function(id, dir="next") {
 Table.prototype.moveToSibling = function(id, dir="next") {
     // Select the first item if there is no selection.
     if (this._selectedRows.length == 0) {
-        this.select_([this.items[0].values().id]);
+        this.select([this.items[0].values().id]);
         return;
     }
     var newId = this.getSiblingId(id, dir);
     if (newId == null) return;
-    this.select_([newId]);
+    this.select([newId]);
 };
 
 
