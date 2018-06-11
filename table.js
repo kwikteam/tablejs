@@ -121,15 +121,15 @@ Table.prototype._setClick = function () {
 
         // Control pressed.
         if (evt.ctrlKey || evt.metaKey) {
-            that.emit("select-toggle", id);
+            that.selectToggle(id);
         }
         // Shift pressed.
         else if (evt.shiftKey) {
-            that.emit("select-until", id);
+            that.selectUntil(id);
         }
         // No control or shift.
         else {
-            that.emit("select", id);
+            that.select([id]);
         }
     });
 };
@@ -222,44 +222,46 @@ Table.prototype._removeFromSelection = function (row) {
 
 Table.prototype._setEventHandlers = function () {
     var that = this;
-    this.onEvent("select", function (id) {
-        if (isNaN(id)) return;
-        var row = that._getRow(id);
-        that._clearSelection();
-        that._addToSelection(row);
-    });
-    this.onEvent("select-toggle", function (id) {
-        if (isNaN(id)) return;
-        var row = that._getRow(id);
-        if (that._selectedRows.includes(row)) {
-            that._removeFromSelection(row);
-        }
-        else {
-            that._addToSelection(row);
-        }
-    });
-    this.onEvent("select-until", function (id) {
-        if (isNaN(id)) return;
-        if (that._selectedRows.length != 1) return;
-        var first = that._selectedRows[0];
-        var row = that._getRow(id);
-        // TODO
-    });
     this.on("sortComplete", function () {
-        // React to sort.
+        // TODO: react to sort.
     });
 };
 
 
+Table.prototype.selectToggle = function (id) {
+    if (isNaN(id)) return;
+    var row = this._getRow(id);
+    if (this._selectedRows.includes(row)) {
+        this._removeFromSelection(row);
+    }
+    else {
+        this._addToSelection(row);
+    }
+     this._emitSelected();
+};
+
+
+Table.prototype.selectUntil = function (id) {
+    if (isNaN(id)) return;
+    if (this._selectedRows.length != 1) return;
+    var first = this._selectedRows[0];
+    var row = this._getRow(id);
+    this._emitSelected();
+};
+
+
 Table.prototype.emit = function (name, data) {
-    var event = new CustomEvent(name, {"detail": data});
+    console.debug("Emit from JS table: " + name + " " + data);
+    var event = new CustomEvent("phy_event", {detail: {name: name, data: data}});
     document.dispatchEvent(event);
 };
 
 
 Table.prototype.onEvent = function (name, callback) {
-    document.addEventListener(name, function (e) {
-        callback(e.detail);
+    document.addEventListener("phy_event", function (e) {
+        if (e.detail.name == name) {
+            callback(e.detail.data);
+        }
     }, false);
 };
 
@@ -267,11 +269,17 @@ Table.prototype.onEvent = function (name, callback) {
 // Public methods
 // ----------------------------------------------------------------------------
 
-Table.prototype.select_ = function(ids) {
+Table.prototype.select = function(ids) {
     this._clearSelection();
     for (let id of ids) {
         this._addToSelection(this._getRow(id));
     }
+    this._emitSelected();
+};
+
+
+Table.prototype._emitSelected = function () {
+     this.emit("select", this.selected());
 };
 
 
@@ -337,12 +345,12 @@ Table.prototype.getSiblingId = function(id, dir="next") {
 Table.prototype.moveToSibling = function(id, dir="next") {
     // Select the first item if there is no selection.
     if (this._selectedRows.length == 0) {
-        this.emit("select", this.items[0].values().id);
+        this.select_([this.items[0].values().id]);
         return;
     }
     var newId = this.getSiblingId(id, dir);
     if (newId == null) return;
-    this.emit("select", newId);
+    this.select_([newId]);
 };
 
 

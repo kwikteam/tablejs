@@ -16,24 +16,24 @@
 <script>
 
 window.onload = function() {
-var data = [
-    {"id": 0, "n_spikes": 10, "group": "unsorted", "quality": 1.},
-    {"id": 1, "n_spikes": 20, "group": "unsorted", "quality": 0.9},
-    {"id": 2, "n_spikes": 30, "group": "good", "quality": 0.8,
-     "_meta": "highlight"},
-    {"id": 3, "n_spikes": 40, "group": "noise", "quality": 0.7,
-     "_meta": "mask"},
-];
+    var data = [
+        {"id": 0, "n_spikes": 10, "group": "unsorted", "quality": 1.},
+        {"id": 1, "n_spikes": 20, "group": "unsorted", "quality": 0.9},
+        {"id": 2, "n_spikes": 30, "group": "good", "quality": 0.8,
+         "_meta": "highlight"},
+        {"id": 3, "n_spikes": 40, "group": "noise", "quality": 0.7,
+         "_meta": "mask"},
+    ];
 
+    var options = {
+      valueNames: ["id", "n_spikes", "quality", "group", "_meta"],
+      columns: ["id", "n_spikes", "quality", "group"],
+    };
 
-var options = {
-  valueNames: ["id", "n_spikes", "quality", "group", "_meta"],
-  columns: ["id", "n_spikes", "quality", "group"],
-};
-
-
-var myTable = new Table('table', options, data);
-// console.log(myTable);
+    window.myTable = new Table('table', options, data);
+    window.myTable.onEvent("select", function (ids) {
+        console.log(ids);
+    });
 }
 </script>
 </body>
