@@ -135,30 +135,35 @@ Table.prototype._setClick = function () {
 };
 
 
+Table.prototype.filter_ = function (text) {
+    var textOrig = text;
+    if (!text) {
+        this.filter();
+        return
+    }
+    // Replace column name in JS expression.
+    for (name of this.valueNames) {
+        text = text.replace(new RegExp("\\b" + name + "\\b", "g"),
+                            "item.values()." + name);
+    }
+    // Filter according to the written expression.
+    this.filter(function (item) {
+        try {
+            out = eval(text);
+            return out;
+        }
+        catch (err) {
+            return true;
+        }
+    });
+};
+
+
 Table.prototype._setKeyPress = function () {
     var that = this;
     this.fel.addEventListener("input", function (e) {
         var text = that.fel.value;
-        var textOrig = text;
-        if (!text) {
-            that.filter();
-            return
-        }
-        // Replace column name in JS expression.
-        for (name of that.valueNames) {
-            text = text.replace(new RegExp("\\b" + name + "\\b", "g"),
-                                "item.values()." + name);
-        }
-        // Filter according to the written expression.
-        that.filter(function (item) {
-            try {
-                out = eval(text);
-                return out;
-            }
-            catch (err) {
-                return true;
-            }
-        });
+        that.filter_(text);
     });
 };
 
