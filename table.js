@@ -179,13 +179,8 @@ Table.prototype._currentSort = function() {
 
 
 Table.prototype._updateDataAttributes = function() {
-    for (let item of this.items) {
-        let values = item.values();
-        if (values._meta) {
-            let row = this._getRow(values.id);
-            row.dataset.meta = values._meta;
-        }
-    }
+    // Left-over, can get rid of.
+    return;
 }
 
 
@@ -251,7 +246,7 @@ Table.prototype.selectUntil = function (id) {
 
 
 Table.prototype.emit = function (name, data) {
-    console.debug("Emit from JS table: " + name + " " + data);
+    //console.debug("Emit from JS table: " + name + " " + data);
     var event = new CustomEvent("phy_event", {detail: {name: name, data: data}});
     document.dispatchEvent(event);
 };
@@ -319,7 +314,7 @@ Table.prototype.selected = function() {
 
 Table.prototype._isMasked = function(row) {
     if (!row) return false;
-    return this.get("id", getId(row))[0].values()._meta == "mask";
+    return this.get("id", getId(row))[0].values().is_masked == true;
 };
 
 
