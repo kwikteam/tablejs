@@ -79,6 +79,7 @@ Table.prototype._getRow = function (id) {
     /* Return the TR element with a given id. */
     var tbody = this.el.getElementsByTagName('tbody')[0];
     for (var row of tbody.children) {
+        if (row == null) continue;
         if ((row.nodeName == 'TR') && (row.children[0].textContent == id)) {
             return row;
         }
@@ -92,6 +93,7 @@ Table.prototype._getIds = function () {
     var tbody = this.el.getElementsByTagName('tbody')[0];
     var ids = [];
     for (var row of tbody.children) {
+        if (row == null) continue;
         if (row.nodeName == 'TR') {
             ids.push(parseInt(row.children[0].textContent));
         }
@@ -104,6 +106,7 @@ Table.prototype._getHeader = function (column) {
     /* Return the TH element of a given column. */
     var thead = this.el.getElementsByTagName('thead')[0];
     for (var th of thead.children[0].children) {
+        if (th == null) continue;
         if ((th.nodeName == 'TH') && (th.textContent == column)) {
             return th;
         }
