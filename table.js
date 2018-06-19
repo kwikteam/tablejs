@@ -287,7 +287,7 @@ Table.prototype.add_ = function(objects) {
     var sort = this._currentSort();
     if (!sort) return;
     this.sort(sort[0], {"order": sort[1]});
-}
+};
 
 
 Table.prototype.change_ = function(objects) {
@@ -299,7 +299,7 @@ Table.prototype.change_ = function(objects) {
     var sort = this._currentSort();
     if (!sort) return;
     this.sort(sort[0], {"order": sort[1]});
-}
+};
 
 
 Table.prototype.remove_ = function(ids) {
@@ -307,7 +307,11 @@ Table.prototype.remove_ = function(ids) {
         this.remove("id", id);
     }
     this._updateDataAttributes();
-}
+};
+
+Table.prototype.remove_all = function() {
+    this.remove_(this._getIds());
+};
 
 
 Table.prototype.selected = function() {
