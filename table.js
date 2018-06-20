@@ -6,10 +6,10 @@ function getId (element) {
     /* Return the id of an element of the table. */
     if (element == null) return null;
     if (element.nodeName == 'TABLE') return null;
-    while (element.nodeName != 'TR') {
+    while (element != null && element.nodeName != 'TR') {
         element = element.parentNode;
     }
-    if (element.parentNode.nodeName == 'TBODY') {
+    if (element != null && element.parentNode != null && element.parentNode.nodeName == 'TBODY') {
         return parseInt(element.children[0].textContent);
     }
     else {
@@ -283,6 +283,13 @@ Table.prototype.select = function(ids) {
 };
 
 
+Table.prototype.selectFirst = function() {
+    if (this.items.length > 0) {
+        this.select([this.items[0].values().id]);
+    }
+};
+
+
 Table.prototype._emitSelected = function () {
     this.emit("select", this.selected());
 };
@@ -354,11 +361,14 @@ Table.prototype.getSiblingId = function(id, dir="next") {
 Table.prototype.moveToSibling = function(id, dir="next") {
     // Select the first item if there is no selection.
     if (this._selectedRows.length == 0) {
-        this.select([this.items[0].values().id]);
+        this.selectFirst();
         return;
     }
     var newId = this.getSiblingId(id, dir);
-    if (newId == null) return;
+    if (newId == null) {
+        //this.selectFirst();
+        return;
+    }
     this.select([newId]);
 };
 
