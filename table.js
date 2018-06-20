@@ -34,8 +34,6 @@ var Table = function (tableId, options, values) {
     // Set the header cells.
     this._setHeader(options);
 
-    this._selectedRows = [];
-
     // Constructor.
     List.apply(this, arguments)
 
@@ -80,12 +78,21 @@ Table.prototype._setHeader = function (options) {
 };
 
 
-Table.prototype._getRow = function (id) {
-    /* Return the TR element with a given id. */
+Table.prototype._iterRows = function* () {
     var tbody = this.el.getElementsByTagName('tbody')[0];
     for (var row of tbody.children) {
         if (row == null) continue;
-        if ((row.nodeName == 'TR') && (row.children[0].textContent == id)) {
+        if (row.nodeName == 'TR') {
+            yield row;
+        }
+    }
+};
+
+
+Table.prototype._getRow = function (id) {
+    /* Return the TR element with a given id. */
+    for (var row of this._iterRows()) {
+        if (row.children[0].textContent == id) {
             return row;
         }
     }
@@ -95,13 +102,9 @@ Table.prototype._getRow = function (id) {
 
 Table.prototype._getIds = function () {
     /* Return all ids in order. */
-    var tbody = this.el.getElementsByTagName('tbody')[0];
     var ids = [];
-    for (var row of tbody.children) {
-        if (row == null) continue;
-        if (row.nodeName == 'TR') {
-            ids.push(parseInt(row.children[0].textContent));
-        }
+    for (var row of this._iterRows()) {
+        ids.push(parseInt(row.children[0].textContent));
     }
     return ids;
 };
@@ -197,27 +200,21 @@ Table.prototype._updateDataAttributes = function() {
 // ----------------------------------------------------------------------------
 
 Table.prototype._clearSelection = function () {
-    for (var prevSelected of this._selectedRows) {
-        prevSelected.classList.remove("selected");
+    for (var row of this._iterRows()) {
+        row.classList.remove("selected");
     }
-    this._selectedRows = [];
 }
 
 
 Table.prototype._addToSelection = function (row) {
     if (!row) return;
     row.classList.add("selected");
-    this._selectedRows.push(row);
 }
 
 
 Table.prototype._removeFromSelection = function (row) {
     if (!row) return;
     row.classList.remove("selected");
-    var index = this._selectedRows.indexOf(row);
-    if (index > -1) {
-        this._selectedRows.splice(index, 1);
-    }
 }
 
 
@@ -235,28 +232,19 @@ Table.prototype._setEventHandlers = function () {
 Table.prototype.selectToggle = function (id) {
     if (isNaN(id)) return;
     var row = this._getRow(id);
-    if (this._selectedRows.includes(row)) {
-        this._removeFromSelection(row);
-    }
-    else {
-        this._addToSelection(row);
-    }
-     this._emitSelected();
+    row.classList.toggle("selected");
+    this._emitSelected();
 };
 
 
 Table.prototype.selectUntil = function (id) {
     if (isNaN(id)) return;
-    if (this._selectedRows.length != 1) return;
-    var first = this._selectedRows[0];
-    var row = this._getRow(id);
     // TODO
     // this._emitSelected();
 };
 
 
 Table.prototype.emit = function (name, data) {
-    //console.debug("Emit from JS table: " + name + " " + data);
     var event = new CustomEvent("phy_event", {detail: {name: name, data: data}});
     document.dispatchEvent(event);
 };
@@ -323,13 +311,27 @@ Table.prototype.remove_ = function(ids) {
     this._updateDataAttributes();
 };
 
-Table.prototype.remove_all = function() {
+
+Table.prototype.removeAll = function() {
+    this._clearSelection();
     this.remove_(this._getIds());
 };
 
 
+Table.prototype.removeAllAndAdd = function(objects) {
+    this.removeAll();
+    this.add_(objects);
+};
+
+
 Table.prototype.selected = function() {
-    return this._selectedRows.map(function (row) { return getId(row); });
+    var sel = [];
+    for (let row of this._iterRows()) {
+        if (row.classList.contains("selected")) {
+            sel.push(getId(row));
+        }
+    }
+    return sel;
 };
 
 
@@ -360,7 +362,7 @@ Table.prototype.getSiblingId = function(id, dir="next") {
 
 Table.prototype.moveToSibling = function(id, dir="next") {
     // Select the first item if there is no selection.
-    if (this._selectedRows.length == 0) {
+    if (this.selected().length == 0) {
         this.selectFirst();
         return;
     }
