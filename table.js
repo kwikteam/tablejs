@@ -4,12 +4,17 @@
 
 function getId (element) {
     /* Return the id of an element of the table. */
-    if (element == null) return;
-    if (element.nodeName == 'TABLE') return;
+    if (element == null) return null;
+    if (element.nodeName == 'TABLE') return null;
     while (element.nodeName != 'TR') {
         element = element.parentNode;
     }
-    return parseInt(element.children[0].textContent);
+    if (element.parentNode.nodeName == 'TBODY') {
+        return parseInt(element.children[0].textContent);
+    }
+    else {
+        return null;
+    }
 };
 
 
@@ -121,6 +126,7 @@ Table.prototype._setClick = function () {
         var element = e.srcElement || e.target;
         var evt = e ? e:window.event;
         var id = getId(element);
+        if (id == null) return;
 
         // Control pressed.
         if (evt.ctrlKey || evt.metaKey) {
@@ -244,7 +250,8 @@ Table.prototype.selectUntil = function (id) {
     if (this._selectedRows.length != 1) return;
     var first = this._selectedRows[0];
     var row = this._getRow(id);
-    this._emitSelected();
+    // TODO
+    // this._emitSelected();
 };
 
 
@@ -277,7 +284,7 @@ Table.prototype.select = function(ids) {
 
 
 Table.prototype._emitSelected = function () {
-     this.emit("select", this.selected());
+    this.emit("select", this.selected());
 };
 
 

@@ -19,14 +19,12 @@ window.onload = function() {
     var data = [
         {"id": 0, "n_spikes": 10, "group": "unsorted", "quality": 1.},
         {"id": 1, "n_spikes": 20, "group": "unsorted", "quality": 0.9},
-        {"id": 2, "n_spikes": 30, "group": "good", "quality": 0.8,
-         "_meta": "highlight"},
-        {"id": 3, "n_spikes": 40, "group": "noise", "quality": 0.7,
-         "_meta": "mask"},
+        {"id": 2, "n_spikes": 30, "group": "good", "quality": 0.8},
+        {"id": 3, "n_spikes": 40, "group": "noise", "quality": 0.7},
     ];
 
     var options = {
-      valueNames: ["id", "n_spikes", "quality", "group", "_meta"],
+      valueNames: ["id", "n_spikes", "quality", "group"],
       columns: ["id", "n_spikes", "quality", "group"],
     };
 
