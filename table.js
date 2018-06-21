@@ -295,7 +295,9 @@ Table.prototype.add_ = function(objects) {
 Table.prototype.change_ = function(objects) {
     for (let object of objects) {
         var item = this.get("id", object.id)[0];
-        item.values(object);
+        if (item != null) {
+            item.values(object);
+        }
     }
     this._updateDataAttributes();
     var sort = this._currentSort();
