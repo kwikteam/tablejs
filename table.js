@@ -28,6 +28,12 @@ var Table = function (tableId, options, values) {
     this.fel = document.getElementById(tableId).
         getElementsByTagName('input')[0];
 
+    // Add _id duplicate so that it can be used as TR data-id.
+    for (let val of values) {
+        val._id = val.id;
+    }
+    options.valueNames.unshift({data: ["_id"]});
+
     // Set the row item.
     options.item = this._setRowItem(options);
 
@@ -36,6 +42,8 @@ var Table = function (tableId, options, values) {
 
     // Constructor.
     List.apply(this, arguments)
+
+    this._nSelected = 0;
 
     // Set click event and event handlers.
     this._setClick();
@@ -91,12 +99,7 @@ Table.prototype._iterRows = function* () {
 
 Table.prototype._getRow = function (id) {
     /* Return the TR element with a given id. */
-    for (var row of this._iterRows()) {
-        if (row.children[0].textContent == id) {
-            return row;
-        }
-    }
-    return null;
+    return document.querySelector("tr[data-_id='" + id + "']");
 };
 
 
@@ -201,20 +204,45 @@ Table.prototype._updateDataAttributes = function() {
 
 Table.prototype._clearSelection = function () {
     for (var row of this._iterRows()) {
-        row.classList.remove("selected");
+        this._removeFromSelection(row);
     }
+    this._nSelected = 0;
 }
 
 
 Table.prototype._addToSelection = function (row) {
     if (!row) return;
-    row.classList.add("selected");
+    row.classList.add("selected", "selected-" + this._nSelected);
+    this._nSelected += 1;
 }
 
 
 Table.prototype._removeFromSelection = function (row) {
     if (!row) return;
+    if (row.classList.contains("selected")) {
+        this._nSelected -= 1;
+    }
+    else {
+        return;
+    }
     row.classList.remove("selected");
+    for (let cl in row.classList) {
+        if (cl.startsWith("selected")) {
+            row.classList.remove(cl);
+        }
+    }
+}
+
+
+Table.prototype._toggleSelection = function (row) {
+    if (!row) return;
+    var wasSelected = row.classList.contains("selected");
+    if (wasSelected) {
+        this._removeFromSelection(row);
+    }
+    else {
+        this._addToSelection(row);
+    }
 }
 
 
@@ -231,16 +259,27 @@ Table.prototype._setEventHandlers = function () {
 
 Table.prototype.selectToggle = function (id) {
     if (isNaN(id)) return;
-    var row = this._getRow(id);
-    row.classList.toggle("selected");
+    this._toggleSelection(this._getRow(id));
     this._emitSelected();
 };
 
 
 Table.prototype.selectUntil = function (id) {
     if (isNaN(id)) return;
-    // TODO
-    // this._emitSelected();
+    var _doSelect = false;
+    for (let row of this._iterRows()) {
+        if (row.classList.contains("selected")) {
+            _doSelect = true;
+        }
+        if (_doSelect) {
+            this._addToSelection(row);
+        }
+        if (getId(row) == id) {
+            _doSelect = false;
+            break;
+        }
+    }
+    this._emitSelected();
 };
 
 
