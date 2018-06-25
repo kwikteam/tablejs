@@ -212,6 +212,11 @@ Table.prototype._clearSelection = function () {
 
 Table.prototype._addToSelection = function (row) {
     if (!row) return;
+    for (let cl of row.classList) {
+        if (cl.startsWith("selected-")) {
+            row.classList.remove(cl);
+        }
+    }
     row.classList.add("selected", "selected-" + this._nSelected);
     this._nSelected += 1;
 }
@@ -226,8 +231,8 @@ Table.prototype._removeFromSelection = function (row) {
         return;
     }
     row.classList.remove("selected");
-    for (let cl in row.classList) {
-        if (cl.startsWith("selected")) {
+    for (let cl of row.classList) {
+        if (cl.startsWith("selected-")) {
             row.classList.remove(cl);
         }
     }
@@ -252,7 +257,7 @@ Table.prototype._toggleSelection = function (row) {
 Table.prototype._setEventHandlers = function () {
     var that = this;
     this.on("sortComplete", function () {
-        // TODO: react to sort.
+
     });
 };
 
@@ -266,18 +271,17 @@ Table.prototype.selectToggle = function (id) {
 
 Table.prototype.selectUntil = function (id) {
     if (isNaN(id)) return;
-    var _doSelect = false;
+    var clickedIndex = this._getRow(id).rowIndex - 1;
+    var selected = this.selected();
+    var lastSelected = selected[selected.length - 1];
+    var lastIndex = this._getRow(lastSelected).rowIndex - 1;
+    var imin = Math.min(clickedIndex, lastIndex);
+    var imax = Math.max(clickedIndex, lastIndex);
+    i = 0;
     for (let row of this._iterRows()) {
-        if (row.classList.contains("selected")) {
-            _doSelect = true;
-        }
-        if (_doSelect) {
-            this._addToSelection(row);
-        }
-        if (getId(row) == id) {
-            _doSelect = false;
-            break;
-        }
+        if (i >= imin) this._addToSelection(row);
+        if (i >= imax) break;
+        i++;
     }
     this._emitSelected();
 };
@@ -366,13 +370,23 @@ Table.prototype.removeAllAndAdd = function(objects) {
 
 
 Table.prototype.selected = function() {
-    var sel = [];
-    for (let row of this._iterRows()) {
-        if (row.classList.contains("selected")) {
-            sel.push(getId(row));
+    /* Return all ids in order. */
+    var ids = {};
+    var out = [];
+    for (let row of document.querySelectorAll("tr.selected")) {
+        var id = getId(row);
+        var pos = 0;
+        for (let cl of row.classList) {
+            if (cl.startsWith("selected-")) {
+                pos = Math.max(pos, parseInt(cl.substring(9)));
+            }
         }
+        ids[pos] = id;
     }
-    return sel;
+    for (let i of Object.keys(ids).sort()) {
+        out.push(ids[i]);
+    }
+    return out;
 };
 
 
