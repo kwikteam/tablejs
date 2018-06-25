@@ -99,7 +99,10 @@ Table.prototype._iterRows = function* () {
 
 Table.prototype._getRow = function (id) {
     /* Return the TR element with a given id. */
-    return document.querySelector("tr[data-_id='" + id + "']");
+    for (let row of this._iterRows()) {
+        if (getId(row) == id) return row;
+    }
+    //return document.querySelector("tr[data-_id='" + id + "']");
 };
 
 
@@ -373,7 +376,9 @@ Table.prototype.selected = function() {
     /* Return all ids in order. */
     var ids = {};
     var out = [];
-    for (let row of document.querySelectorAll("tr.selected")) {
+    // for (let row of document.querySelectorAll("tr.selected")) {
+    for (let row of this._iterRows()) {
+        if (!row.classList.contains("selected")) continue;
         var id = getId(row);
         var pos = 0;
         for (let cl of row.classList) {
