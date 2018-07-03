@@ -313,7 +313,7 @@ Table.prototype.select = function(ids) {
     for (let id of ids) {
         this._addToSelection(this._getRow(id));
     }
-    this._emitSelected();
+    return this._emitSelected();
 };
 
 
@@ -325,7 +325,9 @@ Table.prototype.selectFirst = function() {
 
 
 Table.prototype._emitSelected = function () {
-    this.emit("select", this.selected());
+    var san = this.getSelectedAndNext();
+    this.emit("select", san);
+    return san;
 };
 
 
@@ -420,6 +422,18 @@ Table.prototype.getSiblingId = function(id, dir="next") {
 };
 
 
+Table.prototype.getSelectedAndNext = function () {
+    var selected = this.selected();
+    if (selected.length > 0) {
+        var next = this.getSiblingId(selected[selected.length - 1]);
+    }
+    else {
+        var next = null;
+    }
+    return [selected, next];
+};
+
+
 Table.prototype.moveToSibling = function(id, dir="next") {
     // Select the first item if there is no selection.
     if (this.selected().length == 0) {
@@ -431,7 +445,7 @@ Table.prototype.moveToSibling = function(id, dir="next") {
         //this.selectFirst();
         return;
     }
-    this.select([newId]);
+    return this.select([newId]);
 };
 
 
