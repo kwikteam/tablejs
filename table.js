@@ -319,7 +319,12 @@ Table.prototype.select = function(ids) {
 
 Table.prototype.selectFirst = function() {
     if (this.items.length > 0) {
-        this.select([this.items[0].values().id]);
+        var first = this.items[0].values().id;
+        var row = this._getRow(first);
+        if (this._isMasked(row)) {
+            first = this.getSiblingId(first);
+        }
+        this.select([first]);
     }
 };
 
