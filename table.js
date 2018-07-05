@@ -351,6 +351,7 @@ Table.prototype.change_ = function(objects) {
     var sort = this._currentSort();
     if (!sort) return;
     this.sort(sort[0], {"order": sort[1]});
+    console.log("changed finished");
 };
 
 
@@ -404,9 +405,16 @@ Table.prototype._isMasked = function(row) {
 
 
 Table.prototype.getSiblingId = function(id, dir="next") {
+    console.log("get sibling " + id);
     // By default, first selected item.
     if (typeof(id) === "undefined") {
-        id = this.selected()[0];
+        var sel = this.selected();
+        if (sel.length > 0) {
+            id = sel[0];
+        }
+        else {
+            id = this.items[0].values().id;
+        }
     }
     // Otherwise, first item in the list.
     if (id == null) return null;
@@ -418,6 +426,7 @@ Table.prototype.getSiblingId = function(id, dir="next") {
     while (this._isMasked(row));
     if (this._isMasked(row)) return null;
     // Ensure the result is not masked.
+    console.log("found " + getId(row));
     return getId(row);
 };
 
@@ -435,11 +444,6 @@ Table.prototype.getSelectedAndNext = function () {
 
 
 Table.prototype.moveToSibling = function(id, dir="next") {
-    // Select the first item if there is no selection.
-    if (this.selected().length == 0) {
-        this.selectFirst();
-        return;
-    }
     var newId = this.getSiblingId(id, dir);
     if (newId == null) {
         //this.selectFirst();
