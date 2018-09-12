@@ -329,9 +329,19 @@ Table.prototype.selectFirst = function() {
 };
 
 
+Table.prototype._elementIsVisible = function (el) {
+    var rect = el.getBoundingClientRect();
+    return rect.top >= 0 && rect.bottom <= window.innerHeight;
+};
+
+
 Table.prototype._emitSelected = function () {
     var san = this.getSelectedAndNext();
     this.emit("select", san);
+    var row = this._getRow(san[0][0]);
+    if (!this._elementIsVisible(row)) {
+        window.scroll(0, row.offsetTop - window.innerHeight / 2.0);
+    }
     return san;
 };
 

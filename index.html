@@ -23,6 +23,10 @@ window.onload = function() {
         {"id": 3, "n_spikes": 40, "group": "noise", "quality": 0.7},
     ];
 
+    for (let i = 4; i < 50; i++) {
+        data.push({"id": i, "n_spikes": 5});
+    }
+
     var options = {
       valueNames: ["id", "n_spikes", "quality", "group"],
       columns: ["id", "n_spikes", "quality", "group"],
@@ -30,7 +34,7 @@ window.onload = function() {
 
     window.myTable = new Table('table', options, data);
     window.myTable.onEvent("select", function (ids) {
-        console.log(ids);
+        //console.log(ids);
     });
 }
 </script>
