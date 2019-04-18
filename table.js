@@ -18,6 +18,24 @@ function getId (element) {
 };
 
 
+function removeSelectedClasses (row) {
+    // Remove CSS classes starting with selected-, and return whether
+    // classes where removed or not.
+    for (let cl of row.classList) {
+        if (cl.startsWith("color-")) {
+            row.classList.remove(cl);
+        }
+    }
+    for (let cl of row.classList) {
+        if (cl.startsWith("selected-")) {
+            row.classList.remove(cl);
+            return parseInt(cl.substring(9));
+        }
+    }
+    return false;
+};
+
+
 // Table
 // ----------------------------------------------------------------------------
 
@@ -27,6 +45,8 @@ var Table = function (tableId, options, values) {
 
     this.fel = document.getElementById(tableId).
         getElementsByTagName('input')[0];
+
+    this._selectedIndexOffset = 0;
 
     // Add _id duplicate so that it can be used as TR data-id.
     for (let val of values) {
@@ -205,6 +225,11 @@ Table.prototype._updateDataAttributes = function() {
 // Selection
 // ----------------------------------------------------------------------------
 
+Table.prototype._setSelectedIndexOffset = function (n) {
+    this._selectedIndexOffset = n;
+}
+
+
 Table.prototype._clearSelection = function () {
     for (var row of this._iterRows()) {
         this._removeFromSelection(row);
@@ -215,12 +240,12 @@ Table.prototype._clearSelection = function () {
 
 Table.prototype._addToSelection = function (row) {
     if (!row) return;
-    for (let cl of row.classList) {
-        if (cl.startsWith("selected-")) {
-            row.classList.remove(cl);
-        }
+    // If the row is already selected, do nothing.
+    if (row.classList.contains("selected")) {
+        return;
     }
     row.classList.add("selected", "selected-" + this._nSelected);
+    row.classList.add("color-" + (this._nSelected + this._selectedIndexOffset));
     this._nSelected += 1;
 }
 
@@ -228,16 +253,23 @@ Table.prototype._addToSelection = function (row) {
 Table.prototype._removeFromSelection = function (row) {
     if (!row) return;
     if (row.classList.contains("selected")) {
+        row.classList.remove("selected");
+        removeSelectedClasses(row);
         this._nSelected -= 1;
+        this._renumberSelection();
     }
-    else {
-        return;
-    }
-    row.classList.remove("selected");
-    for (let cl of row.classList) {
-        if (cl.startsWith("selected-")) {
-            row.classList.remove(cl);
-        }
+}
+
+
+Table.prototype._renumberSelection = function () {
+    var ids = this.selected();
+    this._nSelected = 0;
+    for (let id of ids) {
+        var row = this._getRow(id);
+        removeSelectedClasses(row);
+        row.classList.add("selected-" + this._nSelected);
+        row.classList.add("color-" + (this._nSelected + this._selectedIndexOffset));
+        this._nSelected += 1;
     }
 }
 
@@ -272,12 +304,23 @@ Table.prototype.selectToggle = function (id) {
 };
 
 
+Table.prototype._selectedRowIndices = function () {
+    var rows = []
+    for (let row of this._iterRows()) {
+        if (row.classList.contains("selected")) {
+            rows.push(row.rowIndex);
+        }
+    }
+    return rows;
+};
+
+
 Table.prototype.selectUntil = function (id) {
     if (isNaN(id)) return;
     var clickedIndex = this._getRow(id).rowIndex - 1;
-    var selected = this.selected();
-    var lastSelected = selected[selected.length - 1];
-    var lastIndex = this._getRow(lastSelected).rowIndex - 1;
+    //var selected = this.selected();
+    //var lastSelected = selected[selected.length - 1];
+    var lastIndex = Math.max.apply(Math, this._selectedRowIndices()) - 1;
     var imin = Math.min(clickedIndex, lastIndex);
     var imax = Math.max(clickedIndex, lastIndex);
     i = 0;
@@ -338,6 +381,7 @@ Table.prototype._elementIsVisible = function (el) {
 Table.prototype._emitSelected = function () {
     var san = this.getSelectedAndNext();
     this.emit("select", san);
+    console.log("select", san[0]);
     var row = this._getRow(san[0][0]);
     if (!this._elementIsVisible(row)) {
         window.scroll(0, row.offsetTop - window.innerHeight / 2.0);
@@ -405,7 +449,8 @@ Table.prototype.selected = function() {
         }
         ids[pos] = id;
     }
-    for (let i of Object.keys(ids).sort()) {
+    // WARNING: need to sort ids numerically, not lexicographically.
+    for (let i of Object.keys(ids).sort((a, b) => a - b)) {
         out.push(ids[i]);
     }
     return out;
