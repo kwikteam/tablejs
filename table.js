@@ -36,6 +36,68 @@ function removeSelectedClasses (row) {
 };
 
 
+// Debouncer
+// ----------------------------------------------------------------------------
+
+var Debouncer = function () {
+    this.isBusy = false; // whether the GUI is currently busy after a selection
+    this.isWaiting = false; // whether we're already waiting for the end of the interactions
+    this.pendingFunction = null;
+};
+Debouncer.prototype.constructor = Debouncer;
+
+
+Debouncer.prototype._waitEndInteraction = function () {
+    var that = this;
+    if (this.isBusy) {
+        // If we're busy, we wait X milliseconds and try again.
+        // WARNING: we must be sure that setBusy(false) is called externally at some point.
+        console.log("Busy, waiting 50 milliseconds.");
+        this.isWaiting = true;
+        setTimeout(function () { that._waitEndInteraction(); }, 50);
+    }
+    else {
+        // If we're not busy, we trigger.
+        console.log("No longer busy, triggering.");
+        this.isWaiting = false;
+        that.trigger();
+    }
+};
+
+
+Debouncer.prototype.submit = function (f) {
+    this.pendingFunction = f;
+    // trigger immediately if we're not busy.
+    if (!this.isBusy) {
+        this.trigger();
+    }
+    // if we're busy, we wait that the multiple selections stop.
+    else {
+        // If we're already waiting, we do nothing.
+        // Otherwiser, we wait.
+        if (!this.isWaiting) {
+            this._waitEndInteraction();
+        }
+    }
+};
+
+
+Debouncer.prototype.trigger = function () {
+    if (this.pendingFunction) {
+        this.pendingFunction();
+        this.pendingFunction = null;
+    }
+};
+
+
+Debouncer.prototype.setBusy = function (boo) {
+    if (this.isBusy != boo) {
+        //console.info("Set busy to " + boo);
+        this.isBusy = boo;
+    }
+};
+
+
 // Table
 // ----------------------------------------------------------------------------
 
@@ -47,6 +109,9 @@ var Table = function (tableId, options, values) {
         getElementsByTagName('input')[0];
 
     this._selectedIndexOffset = 0;
+
+    this.debouncer = new Debouncer();
+    this._lastSiblingDate = Date.now();
 
     // Add _id duplicate so that it can be used as TR data-id.
     for (let val of values) {
@@ -378,10 +443,19 @@ Table.prototype._elementIsVisible = function (el) {
 };
 
 
+Table.prototype.setBusy = function (busy) {
+    this.debouncer.setBusy(busy);
+};
+
+
 Table.prototype._emitSelected = function () {
     var san = this.getSelectedAndNext();
-    this.emit("select", san);
-    console.log("select", san[0]);
+    // Submit the selection emission to the debouncer.
+    var that = this;
+    this.debouncer.submit(function () {
+        console.log("select", san[0]);
+        that.emit("select", san);
+    });
     var row = this._getRow(san[0][0]);
     if (!this._elementIsVisible(row)) {
         window.scroll(0, row.offsetTop - window.innerHeight / 2.0);
@@ -505,6 +579,9 @@ Table.prototype.moveToSibling = function(id, dir="next") {
         //this.selectFirst();
         return;
     }
+    // Delay two close events.
+    //if (Date.now() - this._lastSiblingDate < 10) return;
+    this._lastSiblingDate = Date.now();
     return this.select([newId]);
 };
 
