@@ -253,8 +253,12 @@ Table.prototype.filter_ = function (text) {
     }
     // Replace column name in JS expression.
     for (name of this.valueNames) {
-        text = text.replace(new RegExp("\\b" + name + "\\b", "g"),
-                            "item.values()." + name);
+        text = text.replace(
+            new RegExp("\\b" + name + "\\b", "g"), "item.values()." + name);
+    }
+    for (name of ["group"]) {
+        text = text.replace(
+            new RegExp("\\b" + name + "\\b", "g"), "item.values()." + name);
     }
     // Filter according to the written expression.
     this.filter(function (item) {
