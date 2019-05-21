@@ -109,6 +109,7 @@ var Table = function (tableId, options, values) {
         getElementsByTagName('input')[0];
 
     this._selectedIndexOffset = 0;
+    this._isFiltered = false;
 
     this.debouncer = new Debouncer();
     this._lastSiblingDate = Date.now();
@@ -129,6 +130,11 @@ var Table = function (tableId, options, values) {
     List.apply(this, arguments)
 
     this._nSelected = 0;
+
+    // Set default sort.
+    if (options.sort) {
+        this.sort(options.sort[0], {"order": options.sort[1]});
+    }
 
     // Set click event and event handlers.
     this._setClick();
@@ -240,6 +246,7 @@ Table.prototype._setClick = function () {
 
 Table.prototype.filter_ = function (text) {
     var textOrig = text;
+    var that = this;
     if (!text) {
         this.filter();
         return
@@ -253,9 +260,11 @@ Table.prototype.filter_ = function (text) {
     this.filter(function (item) {
         try {
             out = eval(text);
+            that._isFiltered = true;
             return out;
         }
         catch (err) {
+            that._isFiltered = false;
             return true;
         }
     });
@@ -357,7 +366,13 @@ Table.prototype._toggleSelection = function (row) {
 Table.prototype._setEventHandlers = function () {
     var that = this;
     this.on("sortComplete", function () {
-
+        that.emit("table_sort", that._getIds());
+    });
+    this.on("filterComplete", function () {
+        // Only send the event if the view is successfully filtered.
+        if (that._isFiltered) {
+            that.emit("table_filter", that._getIds());
+        }
     });
 };
 
@@ -438,6 +453,7 @@ Table.prototype.selectFirst = function() {
 
 
 Table.prototype._elementIsVisible = function (el) {
+    if (typeof(el) === "undefined") return;
     var rect = el.getBoundingClientRect();
     return rect.top >= 0 && rect.bottom <= window.innerHeight;
 };
@@ -457,7 +473,7 @@ Table.prototype._emitSelected = function () {
         that.emit("select", san);
     });
     var row = this._getRow(san[0][0]);
-    if (!this._elementIsVisible(row)) {
+    if (row && !this._elementIsVisible(row)) {
         window.scroll(0, row.offsetTop - window.innerHeight / 2.0);
     }
     return san;
