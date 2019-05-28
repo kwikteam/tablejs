@@ -110,6 +110,7 @@ var Table = function (tableId, options, values) {
 
     this._selectedIndexOffset = 0;
     this._isFiltered = false;
+    this._noEmit = false;
 
     this.debouncer = new Debouncer();
     this._lastSiblingDate = Date.now();
@@ -132,7 +133,7 @@ var Table = function (tableId, options, values) {
     this._nSelected = 0;
 
     // Set default sort.
-    if (options.sort) {
+    if (options.sort && options.sort[0]) {
         this.sort(options.sort[0], {"order": options.sort[1]});
     }
 
@@ -277,9 +278,13 @@ Table.prototype.filter_ = function (text) {
 
 Table.prototype._setKeyPress = function () {
     var that = this;
-    this.fel.addEventListener("input", function (e) {
-        var text = that.fel.value;
-        that.filter_(text);
+    this.fel.addEventListener("keyup", function (e) {
+        if (e.keyCode === 13) {
+            // Cancel the default action, if needed
+            e.preventDefault();
+            var text = that.fel.value;
+            that.filter_(text);
+        }
     });
 };
 
@@ -370,32 +375,16 @@ Table.prototype._toggleSelection = function (row) {
 Table.prototype._setEventHandlers = function () {
     var that = this;
     this.on("sortComplete", function () {
-        that.emit("table_sort", that._getIds());
+        if (!that._noEmit) {
+            that.emit("table_sort", that._getIds());
+        }
     });
     this.on("filterComplete", function () {
         // Only send the event if the view is successfully filtered.
-        if (that._isFiltered) {
+        if (that._isFiltered && !that._noEmit) {
             that.emit("table_filter", that._getIds());
         }
     });
-};
-
-
-Table.prototype.selectToggle = function (id) {
-    if (isNaN(id)) return;
-    this._toggleSelection(this._getRow(id));
-    this._emitSelected();
-};
-
-
-Table.prototype._selectedRowIndices = function () {
-    var rows = []
-    for (let row of this._iterRows()) {
-        if (row.classList.contains("selected")) {
-            rows.push(row.rowIndex);
-        }
-    }
-    return rows;
 };
 
 
@@ -434,6 +423,33 @@ Table.prototype.onEvent = function (name, callback) {
 
 // Public methods
 // ----------------------------------------------------------------------------
+
+Table.prototype.selectToggle = function (id) {
+    if (isNaN(id)) return;
+    this._toggleSelection(this._getRow(id));
+    this._emitSelected();
+};
+
+
+Table.prototype._selectedRowIndices = function () {
+    var rows = []
+    for (let row of this._iterRows()) {
+        if (row.classList.contains("selected")) {
+            rows.push(row.rowIndex);
+        }
+    }
+    return rows;
+};
+
+
+Table.prototype._setSelected = function (ids) {
+    this._clearSelection();
+    for (let id of ids) {
+        var row = this._getRow(id);
+        this._addToSelection(row);
+    }
+};
+
 
 Table.prototype.select = function(ids) {
     this._clearSelection();
@@ -489,7 +505,10 @@ Table.prototype.add_ = function(objects) {
     this._updateDataAttributes();
     var sort = this._currentSort();
     if (!sort) return;
+    // Avoid raising the event when sorting just after a table modification.
+    this._noEmit = true;
     this.sort(sort[0], {"order": sort[1]});
+    this._noEmit = false;
 };
 
 
@@ -503,7 +522,9 @@ Table.prototype.change_ = function(objects) {
     this._updateDataAttributes();
     var sort = this._currentSort();
     if (!sort) return;
+    this._noEmit = true;
     this.sort(sort[0], {"order": sort[1]});
+    this._noEmit = false;
 };
 
 
