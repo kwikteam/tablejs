@@ -245,7 +245,10 @@ Table.prototype._setClick = function () {
 };
 
 
-Table.prototype.filter_ = function (text) {
+Table.prototype.filter_ = function (text, updateTextField) {
+    if (updateTextField) {
+        this.fel.value = text;
+    }
     var textOrig = text;
     var that = this;
     if (!text) {
