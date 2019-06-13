@@ -454,12 +454,12 @@ Table.prototype._setSelected = function (ids) {
 };
 
 
-Table.prototype.select = function(ids) {
+Table.prototype.select = function(ids, kwargs) {
     this._clearSelection();
     for (let id of ids) {
         this._addToSelection(this._getRow(id));
     }
-    return this._emitSelected();
+    return this._emitSelected(kwargs);
 };
 
 
@@ -487,19 +487,17 @@ Table.prototype.setBusy = function (busy) {
 };
 
 
-Table.prototype._emitSelected = function () {
+Table.prototype._emitSelected = function (kwargs) {
     var san = this.getSelectedAndNext();
     // Submit the selection emission to the debouncer.
-    var that = this;
-    this.debouncer.submit(function () {
-        console.log("select", san[0]);
-        that.emit("select", san);
-    });
-    var row = this._getRow(san[0][0]);
-    if (row && !this._elementIsVisible(row)) {
-        window.scroll(0, row.offsetTop - window.innerHeight / 2.0);
-    }
-    return san;
+    console.log("select", san[0]);
+    var obj = {"selected": san[0], "next": san[1], "kwargs": kwargs};
+    this.emit("select", obj);
+    // var row = this._getRow(san[0][0]);
+    // if (row && !this._elementIsVisible(row)) {
+        // window.scroll(0, row.offsetTop - window.innerHeight / 2.0);
+    // }
+    return obj;
 };
 
 
