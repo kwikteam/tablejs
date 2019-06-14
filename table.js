@@ -283,10 +283,16 @@ Table.prototype._setKeyPress = function () {
     var that = this;
     this.fel.addEventListener("keyup", function (e) {
         if (e.keyCode === 13) {
+            // Enter key: validate.
             // Cancel the default action, if needed
             e.preventDefault();
             var text = that.fel.value;
             that.filter_(text);
+        }
+        else if (e.keyCode == 27) {
+            // Escape key: clear.
+            that.fel.value = "";
+            that.filter_("");
         }
     });
 };
