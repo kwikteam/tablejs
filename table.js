@@ -507,6 +507,16 @@ Table.prototype._emitSelected = function (kwargs) {
 };
 
 
+Table.prototype._scrollTo = function (id) {
+    // Scroll to a row.
+    var row = this._getRow(id);
+    if (row && !this._elementIsVisible(row)) {
+        row.scrollIntoView(false);
+        window.scrollBy(0, 100)
+    }
+};
+
+
 Table.prototype.add_ = function(objects) {
     this.add(objects);
     this._updateDataAttributes();
