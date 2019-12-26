@@ -481,6 +481,18 @@ Table.prototype.selectFirst = function() {
 };
 
 
+Table.prototype.selectLast = function() {
+    if (this.items.length > 0) {
+        var last = this.items[this.items.length - 1].values().id;
+        var row = this._getRow(last);
+        if (this._isMasked(row)) {
+            last = this.getSiblingId(last, "previous");
+        }
+        this.select([last]);
+    }
+};
+
+
 Table.prototype._elementIsVisible = function (el) {
     if (typeof(el) === "undefined") return;
     var rect = el.getBoundingClientRect();
